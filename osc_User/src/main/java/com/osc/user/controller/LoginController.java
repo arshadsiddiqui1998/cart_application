@@ -160,7 +160,7 @@ public class LoginController {
 		}
 
 		apiResp.setCode(199);
-		apiResp.setMessage("Invalid OTP");
+		apiResp.setMessage("Invalid 	OTP");
 		apiResp.setStatus(false);
 
 		return ResponseEntity.status(HttpStatus.OK).body(apiResp);
@@ -205,7 +205,7 @@ public class LoginController {
 		sessionMap.put("logoutTime",dateToString(new Date()));
 
 		service.produceInSession(sessionMap);
-		
+
 		request.getSession().invalidate();
 		
 		}catch (Exception e) {
@@ -219,7 +219,7 @@ public class LoginController {
 		}
 
 		apiResp.setCode(200);
-		apiResp.setMessage("User Successfully Loged Out");
+		apiResp.setMessage("User Successfully Logged Out");
 		apiResp.setStatus(true);
 
 		return ResponseEntity.status(HttpStatus.OK).body(apiResp);

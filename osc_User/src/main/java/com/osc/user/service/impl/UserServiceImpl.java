@@ -3,11 +3,19 @@ package com.osc.user.service.impl;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import com.osc.user.payloads.ValidateOtpDto;
+import org.apache.kafka.streams.StoreQueryParameters;
+import org.apache.kafka.streams.state.QueryableStoreType;
+import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.config.StreamsBuilderFactoryBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +46,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	KafkaTemplate<String, String> kafkaTemplate;
+
+	@Autowired
+	StreamsBuilderFactoryBean streamsBuilderFactoryBean;
 
 	@Override
 	public UserDto addUser(UserDto userDto) {
@@ -96,6 +107,32 @@ public class UserServiceImpl implements UserService {
 
 	}
 
+	@Override
+	public void otpStoreInStream(Map<String, String> mailMap) {
+		try {
+			kafkaTemplate.send(AppConstants.OTP_TOPIC,new ObjectMapper().writeValueAsString(mailMap));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public ResponseEntity<?> validateOtp(ValidateOtpDto validateOtpDto) {
+
+		ReadOnlyKeyValueStore<String, String> keyValueStore = streamsBuilderFactoryBean.getKafkaStreams()
+				.store(StoreQueryParameters.fromNameAndType(AppConstants.OTP_TOPIC, QueryableStoreTypes.keyValueStore()));
+		String userId = keyValueStore.get(validateOtpDto.getUserId());
+		String otp = keyValueStore.get(validateOtpDto.getOtp());
+		System.out.println();
+		return null;
+	}
+
+	private ReadOnlyKeyValueStore<String, String> getQueryableStore(String otpStore, QueryableStoreType<ReadOnlyKeyValueStore<Object, Object>> readOnlyKeyValueStoreQueryableStoreType) {
+		return null;
+	}
+
+
 	private Date stringToDate(String date)  {
 		try {
 			if(date == null || "".equals(date)) {
@@ -111,6 +148,7 @@ public class UserServiceImpl implements UserService {
 		return null;
 
 	}
+
 
 
 }

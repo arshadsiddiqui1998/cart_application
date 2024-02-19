@@ -24,7 +24,7 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth->auth.requestMatchers("/test").authenticated()
-						/* .requestMatchers("/user/validateotp").permitAll() */
+						 .requestMatchers("/user/**").permitAll()
                 .anyRequest().permitAll());
         //http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

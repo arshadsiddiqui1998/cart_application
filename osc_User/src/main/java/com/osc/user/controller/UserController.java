@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import com.osc.user.payloads.ValidateOtpDto;
+import org.apache.kafka.streams.state.QueryableStoreType;
+import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +32,12 @@ public class UserController {
 
 	private final Logger logger =  LoggerFactory.getLogger(UserController.class);
 
+
 	Map<String,String> map = new HashMap<>();
 
 	@Autowired
 	UserService userService;
+
 
 	@Autowired
 	private JwtHelper helper;
@@ -66,6 +72,8 @@ public class UserController {
 			String token = this.helper.generateToken(dto, otp); 
 
 			Map<String, String> mailMap = new HashMap<String, String>();
+			Map<String, String> otpValidate = new HashMap<String, String>();
+
 			mailMap.put("To",dto.getEmail());
 			mailMap.put("subject", "OTP for validation");
 			mailMap.put("otp", "**Please enter this OTP  to complete the verification process. : "+otp+"**\n\n");
@@ -81,6 +89,13 @@ public class UserController {
 
 			//call to cache service to store data in cache temporary
 			userService.storeInCache(mailMap);
+
+			otpValidate.put("userId",dto.getUserId());
+			otpValidate.put("otp",String.valueOf(otp));
+
+			userService.otpStoreInStream(otpValidate);
+
+
 
 			//dataObject creating
 			map.put("userId", userId);
@@ -105,6 +120,15 @@ public class UserController {
 
 	}
 
+	@PostMapping("/validate-otp")
+	public ResponseEntity<?> validateOtp(@RequestBody ValidateOtpDto validateOtp) {
+		System.out.println(validateOtp);
+		ResponseEntity<?> responseEntity = userService.validateOtp(validateOtp);
+		return null;
+	}
+
+
+
 	@PostMapping("/validateotp")
 	public ResponseEntity<?> validateOtp(@RequestBody Map<String,Object> map,@RequestHeader("Authorization")String token ){
 		apiResp = new ApiResponse();
@@ -122,7 +146,7 @@ public class UserController {
 
 				return ResponseEntity.status(200).body(apiResp);
 			}
-			
+
 			if (validateToken) {
 				apiResp.setStatus(true);
 				apiResp.setMessage("valid Otp");
@@ -138,7 +162,7 @@ public class UserController {
 			if(count == 3) {
 				invalidOtpCount.put(map.get("userId").toString(), 0);
 				apiResp.setStatus(false);
-				apiResp.setMessage("Invalid Otp 3 Attemps Completed");
+				apiResp.setMessage("Invalid Otp 3 Attempts Completed");
 				apiResp.setCode(301);
 
 				return ResponseEntity.status(200).body(apiResp);
@@ -174,8 +198,7 @@ public class UserController {
 			userDetails.setPassword(encryptedPassword);
 
 			userService.addUser(userDetails);
-			
-			
+
 			map.put("userId", user.getUserId());
 			map.put("isClear", "true");
 			//Clear User Data from cache
@@ -197,7 +220,5 @@ public class UserController {
 		}
 
 	}
-
-
 
 }

@@ -3,7 +3,8 @@ package com.osc.session.config;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class KafkaStreamConfig {
+public class
+KafkaStreamConfig {
 	/*
 
 	@Value(value = "${spring.kafka.bootstrap-server}")

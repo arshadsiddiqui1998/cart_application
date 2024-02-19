@@ -2,6 +2,7 @@ package com.osc.user.payloads;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,11 +27,12 @@ public class UserDto {
 
 	private String contact;
 
-	@JsonProperty("DOB")
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date dob;
 
 	private String password;
 
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date createDate;
 
 	private String userId;
